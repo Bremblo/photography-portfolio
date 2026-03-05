@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conor Schall</title>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
 
@@ -221,50 +222,24 @@
   <div class="about-layout">
     <div>
       <span class="about-label">About</span>
-      <h2>Conor Schall</h2>
-      <p>
-        Video producer and photographer based in Toledo, Ohio.
-        I make short-form documentaries and photographs that capture unique shape and textures.
-      </p>
-      <p>
-        When I'm not behind a camera, I'm probably sending morse code, playing with synths, or cooking something
-        that takes way too long.
-      </p>
+      <h2 id="about-name">Conor Schall</h2>
+      <p id="about-bio1"></p>
+      <p id="about-bio2"></p>
       <div class="about-divider"></div>
       <div class="about-meta">
-        <span>Location</span> — Toledo, OH<br>
-        <span>Focus</span> — Documentary · Photography · Video Production
+        <span>Location</span> — <span id="about-location"></span><br>
+        <span>Focus</span> — <span id="about-focus"></span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- UPDATE THESE with your real links -->
 <section id="contact" class="page">
   <div class="contact-layout">
     <span class="about-label">Contact</span>
     <h2>Get in touch</h2>
     <p class="subtitle">Open for documentary, commercial, and editorial work.</p>
-    <div class="contact-links">
-      <a href="mailto:hello@conorschall.com" class="contact-link">
-        <div>
-          <div class="contact-link-label">Email</div>
-          <div class="contact-link-value">conorschall@gmail.com</div>
-        </div>
-      </a>
-      <a href="https://instagram.com/conorschall" target="_blank" rel="noopener" class="contact-link">
-        <div>
-          <div class="contact-link-label">Instagram</div>
-          <div class="contact-link-value">@conorschall</div>
-        </div>
-      </a>
-      <a href="https://youtube.com/@conorschall" target="_blank" rel="noopener" class="contact-link">
-        <div>
-          <div class="contact-link-label">YouTube</div>
-          <div class="contact-link-value">youtube.com/@conor_schall</div>
-        </div>
-      </a>
-    </div>
+    <div class="contact-links" id="contact-links"></div>
   </div>
 </section>
 
@@ -281,10 +256,9 @@
 
 <script>
 /* ============================================================
-   AUTOMATIC PHOTO LOADING
-   You never need to edit this file to add photos.
-   Just drop images into photos/ and push to GitHub.
-   A GitHub Action generates photos.txt automatically.
+   ALL CONTENT LOADED FROM JSON FILES
+   Managed via Decap CMS at yoursite.com/admin/
+   You never need to edit this file.
    ============================================================ */
 
 var PHOTOS = [];
@@ -294,6 +268,7 @@ var countEl = document.getElementById('photo-count');
 var lightbox = document.getElementById('lightbox');
 var lightboxImg = document.getElementById('lightbox-img');
 
+/* — Routing — */
 function navigate() {
   var hash = window.location.hash.replace('#', '') || 'gallery';
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
@@ -307,14 +282,24 @@ function navigate() {
 window.addEventListener('hashchange', navigate);
 window.addEventListener('DOMContentLoaded', function() {
   navigate();
-  loadPhotos();
+  loadGallery();
+  loadAbout();
+  loadContact();
 });
 
-function loadPhotos() {
-  fetch('photos.txt')
-    .then(function(r) { return r.text(); })
-    .then(function(text) {
-      PHOTOS = text.split('\n').map(function(f) { return f.trim(); }).filter(function(f) { return f.length > 0; });
+/* — Netlify Identity redirect after login — */
+if (window.netlifyIdentity) {
+  window.netlifyIdentity.on('init', function(user) {
+    if (!user) { window.netlifyIdentity.on('login', function() { document.location.href = '/admin/'; }); }
+  });
+}
+
+/* — Gallery — */
+function loadGallery() {
+  fetch('gallery.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      PHOTOS = data.photos || [];
       buildGallery();
     })
     .catch(function() { buildGallery(); });
@@ -323,23 +308,58 @@ function loadPhotos() {
 function buildGallery() {
   grid.innerHTML = '';
   if (PHOTOS.length === 0) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">&#9723;</div><p>No photos yet.<br>Drop images into the photos/ folder and push.</p></div>';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">&#9723;</div><p>No photos yet.<br>Upload images at /admin/</p></div>';
     countEl.textContent = '0 images';
     return;
   }
   countEl.textContent = PHOTOS.length + ' image' + (PHOTOS.length !== 1 ? 's' : '');
-  PHOTOS.forEach(function(file, i) {
+  PHOTOS.forEach(function(photo, i) {
     var div = document.createElement('div');
     div.className = 'photo-item';
-    div.innerHTML = '<img src="photos/' + file + '" alt="" loading="lazy">';
+    div.innerHTML = '<img src="' + photo.image + '" alt="' + (photo.alt || '') + '" loading="lazy">';
     div.addEventListener('click', function() { openLightbox(i); });
     grid.appendChild(div);
   });
 }
 
-function openLightbox(i) { currentLightbox = i; lightboxImg.src = 'photos/' + PHOTOS[i]; lightbox.classList.add('open'); document.body.style.overflow = 'hidden'; }
+/* — About — */
+function loadAbout() {
+  fetch('content/about.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('about-name').textContent = data.name || 'Conor Schall';
+      document.getElementById('about-bio1').textContent = data.bio1 || '';
+      document.getElementById('about-bio2').textContent = data.bio2 || '';
+      document.getElementById('about-location').textContent = data.location || '';
+      document.getElementById('about-focus').textContent = data.focus || '';
+    })
+    .catch(function() {});
+}
+
+/* — Contact — */
+function loadContact() {
+  fetch('content/contact.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var container = document.getElementById('contact-links');
+      container.innerHTML = '';
+      if (data.email) {
+        container.innerHTML += '<a href="mailto:' + data.email + '" class="contact-link"><div><div class="contact-link-label">Email</div><div class="contact-link-value">' + data.email + '</div></div></a>';
+      }
+      if (data.instagram && data.instagram_url) {
+        container.innerHTML += '<a href="' + data.instagram_url + '" target="_blank" rel="noopener" class="contact-link"><div><div class="contact-link-label">Instagram</div><div class="contact-link-value">' + data.instagram + '</div></div></a>';
+      }
+      if (data.youtube && data.youtube_url) {
+        container.innerHTML += '<a href="' + data.youtube_url + '" target="_blank" rel="noopener" class="contact-link"><div><div class="contact-link-label">YouTube</div><div class="contact-link-value">' + data.youtube + '</div></div></a>';
+      }
+    })
+    .catch(function() {});
+}
+
+/* — Lightbox — */
+function openLightbox(i) { currentLightbox = i; lightboxImg.src = PHOTOS[i].image; lightbox.classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeLightbox() { lightbox.classList.remove('open'); document.body.style.overflow = ''; }
-function lightboxNav(dir) { currentLightbox = (currentLightbox + dir + PHOTOS.length) % PHOTOS.length; lightboxImg.src = 'photos/' + PHOTOS[currentLightbox]; }
+function lightboxNav(dir) { currentLightbox = (currentLightbox + dir + PHOTOS.length) % PHOTOS.length; lightboxImg.src = PHOTOS[currentLightbox].image; }
 
 document.getElementById('lb-prev').addEventListener('click', function(e) { e.stopPropagation(); lightboxNav(-1); });
 document.getElementById('lb-next').addEventListener('click', function(e) { e.stopPropagation(); lightboxNav(1); });
