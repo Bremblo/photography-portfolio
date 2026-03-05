@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conor Schall</title>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --black: #0a0a0a;
+    --dark: #111111;
+    --mid: #1a1a1a;
+    --green: #00ff41;
+    --green-dim: #00cc34;
+    --green-glow: rgba(0, 255, 65, 0.15);
+    --green-subtle: rgba(0, 255, 65, 0.06);
+    --gray: #555;
+    --light-gray: #888;
+    --white: #e8e8e8;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Inter', -apple-system, Helvetica, Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--green-dim) var(--dark); }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--green); color: var(--black); }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 2.5rem;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--green-subtle);
+  }
+
+  .nav-logo {
+    font-family: var(--mono); font-size: 0.85rem; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--green); text-decoration: none;
+    text-shadow: 0 0 20px var(--green-glow);
+  }
+
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+
+  .nav-links a {
+    font-family: var(--mono); font-size: 0.7rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--light-gray); text-decoration: none;
+    transition: color 0.3s, text-shadow 0.3s; position: relative;
+  }
+
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1px; background: var(--green);
+    box-shadow: 0 0 6px var(--green-glow); transition: width 0.3s;
+  }
+
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--green); text-shadow: 0 0 12px var(--green-glow);
+  }
+  .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+
+  .page {
+    display: none; min-height: 100vh;
+    padding: 7rem 2.5rem 4rem; max-width: 1200px; margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+  }
+  .page.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .gallery-header { margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--mid); }
+  .gallery-header h1 {
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray);
+  }
+  .gallery-header .count { font-family: var(--mono); font-size: 0.65rem; color: var(--green-dim); margin-top: 0.4rem; }
+
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 3px; }
+
+  .photo-item {
+    position: relative; aspect-ratio: 3/2; overflow: hidden;
+    cursor: pointer; background: var(--dark);
+  }
+  .photo-item img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.6s ease, filter 0.6s ease; filter: grayscale(10%);
+  }
+  .photo-item:hover img { transform: scale(1.03); filter: grayscale(0%); }
+  .photo-item::after {
+    content: ''; position: absolute; inset: 0;
+    border: 1px solid transparent; transition: border-color 0.3s;
+  }
+  .photo-item:hover::after {
+    border-color: var(--green); box-shadow: inset 0 0 20px var(--green-glow);
+  }
+
+  .lightbox {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.95); justify-content: center;
+    align-items: center; cursor: zoom-out; animation: fadeIn 0.3s ease;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border: 1px solid var(--mid); }
+
+  .lightbox-close {
+    position: absolute; top: 1.5rem; right: 2rem;
+    font-family: var(--mono); font-size: 0.75rem; color: var(--green);
+    background: none; border: 1px solid var(--green-dim);
+    padding: 0.4rem 0.8rem; cursor: pointer; letter-spacing: 0.1em;
+    transition: background 0.2s;
+  }
+  .lightbox-close:hover { background: var(--green); color: var(--black); }
+
+  .lightbox-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-family: var(--mono); font-size: 1.5rem; color: var(--green-dim);
+    background: none; border: none; cursor: pointer; padding: 1rem;
+    transition: color 0.2s;
+  }
+  .lightbox-nav:hover { color: var(--green); }
+  .lightbox-prev { left: 1rem; }
+  .lightbox-next { right: 1rem; }
+
+  .empty-state { text-align: center; padding: 6rem 2rem; color: var(--gray); }
+  .empty-state .icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em; }
+
+  .about-layout { display: grid; grid-template-columns: 1fr; gap: 3rem; max-width: 640px; }
+  .about-label {
+    font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--green-dim); margin-bottom: 1rem; display: block;
+  }
+  .about-layout h2 { font-family: var(--sans); font-size: 1.8rem; font-weight: 300; line-height: 1.35; margin-bottom: 1.5rem; }
+  .about-layout p { font-size: 0.95rem; color: var(--light-gray); line-height: 1.75; margin-bottom: 1rem; }
+  .about-divider { width: 40px; height: 1px; background: var(--green-dim); box-shadow: 0 0 8px var(--green-glow); margin: 1rem 0; }
+  .about-meta { font-family: var(--mono); font-size: 0.7rem; color: var(--gray); letter-spacing: 0.05em; }
+  .about-meta span { color: var(--green-dim); }
+
+  .contact-layout { max-width: 500px; }
+  .contact-layout h2 { font-family: var(--sans); font-size: 1.8rem; font-weight: 300; margin-bottom: 0.8rem; }
+  .contact-layout .subtitle { font-size: 0.9rem; color: var(--gray); margin-bottom: 3rem; }
+  .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+  .contact-link {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.2rem 1.5rem; border: 1px solid var(--mid);
+    text-decoration: none; color: var(--white);
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .contact-link:hover { border-color: var(--green-dim); background: var(--green-subtle); }
+  .contact-link-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green-dim); }
+  .contact-link-value { font-size: 0.9rem; color: var(--light-gray); }
+
+  footer {
+    padding: 2rem 2.5rem; text-align: center;
+    font-family: var(--mono); font-size: 0.6rem;
+    letter-spacing: 0.1em; color: var(--gray);
+    border-top: 1px solid var(--mid);
+  }
+  footer span { color: var(--green-dim); }
+
+  @media (max-width: 768px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-links { gap: 1.2rem; }
+    .nav-links a { font-size: 0.65rem; }
+    .page { padding: 6rem 1.5rem 3rem; }
+    .photo-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  }
+  @media (max-width: 480px) {
+    .photo-grid { grid-template-columns: 1fr; gap: 2px; }
+    .lightbox-nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#gallery" class="nav-logo">Conor Schall</a>
+  <ul class="nav-links">
+    <li><a href="#gallery" data-page="gallery">Work</a></li>
+    <li><a href="#about" data-page="about">About</a></li>
+    <li><a href="#contact" data-page="contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section id="gallery" class="page active">
+  <div class="gallery-header">
+    <h1>Selected Work</h1>
+    <div class="count" id="photo-count"></div>
+  </div>
+  <div class="photo-grid" id="photo-grid"></div>
+</section>
+
+<section id="about" class="page">
+  <div class="about-layout">
+    <div>
+      <span class="about-label">About</span>
+      <h2 id="about-name">Conor Schall</h2>
+      <p id="about-bio1"></p>
+      <p id="about-bio2"></p>
+      <div class="about-divider"></div>
+      <div class="about-meta">
+        <span>Location</span> — <span id="about-location"></span><br>
+        <span>Focus</span> — <span id="about-focus"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="page">
+  <div class="contact-layout">
+    <span class="about-label">Contact</span>
+    <h2>Get in touch</h2>
+    <p class="subtitle">Open for documentary, commercial, and editorial work.</p>
+    <div class="contact-links" id="contact-links"></div>
+  </div>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close">ESC</button>
+  <button class="lightbox-nav lightbox-prev" id="lb-prev">&#8592;</button>
+  <button class="lightbox-nav lightbox-next" id="lb-next">&#8594;</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<footer>
+  <span>&copy;</span> 2026 Conor Schall
+</footer>
+
+<script>
+/* ============================================================
+   ALL CONTENT LOADED FROM JSON FILES
+   Managed via Decap CMS at yoursite.com/admin/
+   You never need to edit this file.
+   ============================================================ */
+
+var PHOTOS = [];
+var currentLightbox = 0;
+var grid = document.getElementById('photo-grid');
+var countEl = document.getElementById('photo-count');
+var lightbox = document.getElementById('lightbox');
+var lightboxImg = document.getElementById('lightbox-img');
+
+/* — Routing — */
+function navigate() {
+  var hash = window.location.hash.replace('#', '') || 'gallery';
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-links a').forEach(function(a) { a.classList.remove('active'); });
+  var target = document.getElementById(hash);
+  if (target) { target.classList.add('active'); target.style.animation = 'none'; target.offsetHeight; target.style.animation = ''; }
+  var link = document.querySelector('.nav-links a[data-page="' + hash + '"]');
+  if (link) link.classList.add('active');
+}
+
+window.addEventListener('hashchange', navigate);
+window.addEventListener('DOMContentLoaded', function() {
+  navigate();
+  loadGallery();
+  loadAbout();
+  loadContact();
+});
+
+/* — Netlify Identity redirect after login — */
+if (window.netlifyIdentity) {
+  window.netlifyIdentity.on('init', function(user) {
+    if (!user) { window.netlifyIdentity.on('login', function() { document.location.href = '/admin/'; }); }
+  });
+}
+
+/* — Gallery — */
+function loadGallery() {
+  fetch('gallery.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      PHOTOS = data.photos || [];
+      buildGallery();
+    })
+    .catch(function() { buildGallery(); });
+}
+
+function buildGallery() {
+  grid.innerHTML = '';
+  if (PHOTOS.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">&#9723;</div><p>No photos yet.<br>Upload images at /admin/</p></div>';
+    countEl.textContent = '0 images';
+    return;
+  }
+  countEl.textContent = PHOTOS.length + ' image' + (PHOTOS.length !== 1 ? 's' : '');
+  PHOTOS.forEach(function(photo, i) {
+    var div = document.createElement('div');
+    div.className = 'photo-item';
+    div.innerHTML = '<img src="' + photo.image + '" alt="' + (photo.alt || '') + '" loading="lazy">';
+    div.addEventListener('click', function() { openLightbox(i); });
+    grid.appendChild(div);
+  });
+}
+
+/* — About — */
+function loadAbout() {
+  fetch('content/about.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('about-name').textContent = data.name || 'Conor Schall';
+      document.getElementById('about-bio1').textContent = data.bio1 || '';
+      document.getElementById('about-bio2').textContent = data.bio2 || '';
+      document.getElementById('about-location').textContent = data.location || '';
+      document.getElementById('about-focus').textContent = data.focus || '';
+    })
+    .catch(function() {});
+}
+
+/* — Contact — */
+function loadContact() {
+  fetch('content/contact.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var container = document.getElementById('contact-links');
+      container.innerHTML = '';
+      if (data.email) {
+        container.innerHTML += '<a href="mailto:' + data.email + '" class="contact-link"><div><div class="contact-link-label">Email</div><div class="contact-link-value">' + data.email + '</div></div></a>';
+      }
+      if (data.instagram && data.instagram_url) {
+        container.innerHTML += '<a href="' + data.instagram_url + '" target="_blank" rel="noopener" class="contact-link"><div><div class="contact-link-label">Instagram</div><div class="contact-link-value">' + data.instagram + '</div></div></a>';
+      }
+      if (data.youtube && data.youtube_url) {
+        container.innerHTML += '<a href="' + data.youtube_url + '" target="_blank" rel="noopener" class="contact-link"><div><div class="contact-link-label">YouTube</div><div class="contact-link-value">' + data.youtube + '</div></div></a>';
+      }
+    })
+    .catch(function() {});
+}
+
+/* — Lightbox — */
+function openLightbox(i) { currentLightbox = i; lightboxImg.src = PHOTOS[i].image; lightbox.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeLightbox() { lightbox.classList.remove('open'); document.body.style.overflow = ''; }
+function lightboxNav(dir) { currentLightbox = (currentLightbox + dir + PHOTOS.length) % PHOTOS.length; lightboxImg.src = PHOTOS[currentLightbox].image; }
+
+document.getElementById('lb-prev').addEventListener('click', function(e) { e.stopPropagation(); lightboxNav(-1); });
+document.getElementById('lb-next').addEventListener('click', function(e) { e.stopPropagation(); lightboxNav(1); });
+lightbox.addEventListener('click', function(e) { if (e.target === lightbox) closeLightbox(); });
+document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+document.addEventListener('keydown', function(e) {
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+});
+</script>
+</body>
+</html>
