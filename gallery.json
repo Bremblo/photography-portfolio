@@ -1,1 +1,22 @@
-{"photos": []}
+{
+  "photos": [
+    {
+      "image": "/photos/MVC-211F.jpg"
+    },
+    {
+      "image": "/photos/MVC-206F.jpg"
+    },
+    {
+      "image": "/photos/MVC-210F.jpg"
+    },
+    {
+      "image": "/photos/MVC-209F.jpg"
+    },
+    {
+      "image": "/photos/mvc-829f.jpg"
+    },
+    {
+      "image": "/photos/mvc-370f.jpg"
+    }
+  ]
+}
