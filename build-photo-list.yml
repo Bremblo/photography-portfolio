@@ -1,0 +1,28 @@
+name: Build Photo List
+
+on:
+  push:
+    paths:
+      - 'photos/**'
+      - '.github/workflows/build-photo-list.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate photo list
+        run: |
+          cd photos
+          ls -1 *.jpg *.jpeg *.png *.webp 2>/dev/null | sort > ../photos.txt
+          echo "Found $(wc -l < ../photos.txt) photos"
+          cat ../photos.txt
+
+      - name: Commit photo list
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add photos.txt
+          git diff --cached --quiet || git commit -m "Auto-update photo list"
+          git push
