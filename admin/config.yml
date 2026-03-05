@@ -27,6 +27,24 @@ collections:
                 widget: "string"
                 required: false
 
+      - name: "street"
+        label: "Street Photos"
+        file: "street.json"
+        description: "Manage street photography photos."
+        fields:
+          - label: "Photos"
+            name: "photos"
+            widget: "list"
+            summary: "{{fields.image}}"
+            fields:
+              - label: "Image"
+                name: "image"
+                widget: "image"
+              - label: "Alt text (optional)"
+                name: "alt"
+                widget: "string"
+                required: false
+
   - name: "settings"
     label: "Settings"
     files:
