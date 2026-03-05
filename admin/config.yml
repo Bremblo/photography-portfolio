@@ -1,0 +1,51 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "photos"
+public_folder: "/photos"
+
+collections:
+  - name: "gallery"
+    label: "Gallery"
+    files:
+      - name: "photos"
+        label: "Photos"
+        file: "gallery.json"
+        description: "Manage your portfolio photos. Drag to reorder."
+        fields:
+          - label: "Photos"
+            name: "photos"
+            widget: "list"
+            summary: "{{fields.image}}"
+            fields:
+              - label: "Image"
+                name: "image"
+                widget: "image"
+              - label: "Alt text (optional)"
+                name: "alt"
+                widget: "string"
+                required: false
+
+  - name: "settings"
+    label: "Settings"
+    files:
+      - name: "about"
+        label: "About Page"
+        file: "content/about.json"
+        fields:
+          - { label: "Name", name: "name", widget: "string", default: "Conor Schall" }
+          - { label: "Bio paragraph 1", name: "bio1", widget: "text" }
+          - { label: "Bio paragraph 2", name: "bio2", widget: "text", required: false }
+          - { label: "Location", name: "location", widget: "string", default: "Toledo, OH" }
+          - { label: "Focus", name: "focus", widget: "string", default: "Documentary · Photography · Video Production" }
+
+      - name: "contact"
+        label: "Contact Info"
+        file: "content/contact.json"
+        fields:
+          - { label: "Email", name: "email", widget: "string" }
+          - { label: "Instagram handle", name: "instagram", widget: "string", required: false }
+          - { label: "Instagram URL", name: "instagram_url", widget: "string", required: false }
+          - { label: "YouTube label", name: "youtube", widget: "string", required: false }
+          - { label: "YouTube URL", name: "youtube_url", widget: "string", required: false }
